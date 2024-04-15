@@ -19,9 +19,9 @@ import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
 @Repository
 class userRepositoryImpl : userRepository {
 
-    val SQL_CREATE : String = "INSERT INTO ET_USER (USER_ID, FIRST_NAME, LAST_NAME, EMAIL, PASSWORD) VALUES (NEXTVAL('ET_USERS_SEQ'), ?, ?, ?, ?)"
-    val SQL_COUNT_BY_EMAIL : String = "SELECT COUNT(*) FROM ET_USER WHERE EMAIL = ?"
-    val SQL_FIND_BY_ID : String = "SELECT USER_ID, FIRST_NAME, LAST_NAME, EMAIL, PASSWORD " + "FROM ET_USER WHERE USER_ID = ?"
+    val SQL_CREATE : String = "INSERT INTO et_users  (USER_ID, FIRST_NAME, LAST_NAME, EMAIL, PASSWORD) VALUES (NEXTVAL('ET_USERS_SEQ'), ?, ?, ?, ?)"
+    val SQL_COUNT_BY_EMAIL : String = "SELECT COUNT(*) FROM et_users  WHERE EMAIL = ?"
+    val SQL_FIND_BY_ID : String = "SELECT USER_ID, FIRST_NAME, LAST_NAME, EMAIL, PASSWORD " + "FROM et_users  WHERE USER_ID = ?"
 
     @Autowired
     var jdbcTemplate: JdbcTemplate? = null
@@ -35,6 +35,7 @@ class userRepositoryImpl : userRepository {
                 ps.setString(2, lastName)
                 ps.setString(3, email)
                 ps.setString(4, password)
+
                 ps
             }, keyHolder)
             return keyHolder.keys?.get("USER_ID") as Int;
@@ -55,7 +56,7 @@ class userRepositoryImpl : userRepository {
     }
 
     override fun findById(id: Int): User {
-        val result: User? = jdbcTemplate?.queryForObject(SQL_COUNT_BY_EMAIL, userRowMapper, Int::class.java)
+        val result: User? = jdbcTemplate?.queryForObject(SQL_FIND_BY_ID, userRowMapper, id)
         return result!!
     }
 

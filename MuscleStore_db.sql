@@ -9,7 +9,7 @@ email varchar(30) not null,
 password text not null
 );
 
-
+CREATE SEQUENCE ET_USERS_SEQ;
 
 
 
