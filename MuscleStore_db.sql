@@ -9,6 +9,8 @@ email varchar(30) not null,
 password text not null
 );
 
+TRUNCATE TABLE et_users;
+
 CREATE SEQUENCE ET_USERS_SEQ;
 
 

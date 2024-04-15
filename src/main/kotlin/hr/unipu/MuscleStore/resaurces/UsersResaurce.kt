@@ -19,6 +19,16 @@ class UsersResaurce {
     @Autowired
     private lateinit var userServices: userServices
 
+    @PostMapping("/login")
+    fun login(@RequestBody userMap: Map<String, Any>) : ResponseEntity<Map<String, String>> {
+        val email = userMap["email"] as String
+        val password = userMap["password"] as String
+        val user : User = userServices.validateUser(email, password)
+        val map = HashMap<String, String>()
+        map["message"] = "loggedIn successfully"
+        return ResponseEntity(map, HttpStatus.OK)
+    }
+
     @PostMapping("/register")
     fun  registerUser(@RequestBody userMap: Map<String, String>): ResponseEntity<Map<String, String>> {
         val firstName = userMap["firstName"]

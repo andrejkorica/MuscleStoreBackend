@@ -18,7 +18,8 @@ class userServiceImpl : userServices {
     private lateinit var userRepository: userRepository
 
     override fun validateUser(email: String, password: String): User {
-        TODO("Not yet implemented")
+        val emailLower = email.lowercase(Locale.getDefault())
+        return userRepository.findByEmailAndPassword(emailLower, password)
     }
 
     override fun registerUser(firstName: String, lastName: String, email: String, password: String): User {
