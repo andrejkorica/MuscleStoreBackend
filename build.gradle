@@ -28,6 +28,8 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
 	implementation 'com.ToxicBakery.library.bcrypt:bcrypt-jvm:1.0.9'
+	implementation 'com.brendangoldberg:kotlin-jwt:1.3.1'
+
 }
 
 tasks.withType(KotlinCompile).configureEach {

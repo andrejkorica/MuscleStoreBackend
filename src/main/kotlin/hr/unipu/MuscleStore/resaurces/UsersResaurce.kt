@@ -1,15 +1,23 @@
 package hr.unipu.MuscleStore.resaurces
 
+import com.brendangoldberg.kotlin_jwt.KtJwtCreator
+import com.brendangoldberg.kotlin_jwt.algorithms.HSAlgorithm
+
+import hr.unipu.MuscleStore.Constants
 import hr.unipu.MuscleStore.Services.userServices
 import hr.unipu.MuscleStore.domain.User
-import hr.unipu.MuscleStore.repositories.userRepository
+
 import org.springframework.beans.factory.annotation.Autowired
+
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+
+import java.util.*
+import kotlin.collections.HashMap
 
 @RestController
 @RequestMapping("/api/users")
@@ -26,7 +34,7 @@ class UsersResaurce {
         val user : User = userServices.validateUser(email, password)
         val map = HashMap<String, String>()
         map["message"] = "loggedIn successfully"
-        return ResponseEntity(map, HttpStatus.OK)
+        return ResponseEntity(generateJWTToken(user), HttpStatus.OK)
     }
 
     @PostMapping("/register")
@@ -39,7 +47,30 @@ class UsersResaurce {
         val user : User = userServices.registerUser(firstName!!, lastName!!, email!!, password!!)
         var map = HashMap<String, String>()
         map.put("message", "registered successfully")
-        return ResponseEntity(map, HttpStatus.CREATED)
+        return ResponseEntity(generateJWTToken(user), HttpStatus.CREATED)
+    }
+
+    private fun generateJWTToken(user : User) : Map <String, String> {
+        val constants = Constants()
+        val algorithm = HSAlgorithm.HS256(constants.API_SECRET_KEY)
+
+        val issuedAt = Date()
+
+        val expiration = Date(System.currentTimeMillis() + 3600 * 1000)
+
+        // Create JWT
+        val jwt = KtJwtCreator.init()
+            .setIssuedAt(issuedAt)
+            .setExpiresAt(expiration)
+            .addClaim("userId", user.getUserId() ?:0)
+            .addClaim("email", user.getEmail() ?:"")
+            .addClaim("firstName", user.getFirstName() ?:"")
+            .addClaim("lastName", user.getLastName() ?:"")
+            .sign(algorithm)
+
+        val map = mutableMapOf<String, String>()
+        map["token"] = jwt
+        return map
     }
 
 }

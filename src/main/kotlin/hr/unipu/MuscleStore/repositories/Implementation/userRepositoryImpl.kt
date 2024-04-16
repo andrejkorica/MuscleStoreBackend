@@ -50,16 +50,16 @@ class userRepositoryImpl : userRepository {
     }
 
     override fun findByEmailAndPassword(email: String, password: String): User {
-        try {
-            val result: User? = jdbcTemplate?.queryForObject(SQL_FIND_BY_EMAIL, userRowMapper, email)
-            if(password != result?.getPassword()){
-                throw EtAuthException("Invalid email or password.")
-            }
-            return result
-        } catch (e : EmptyResultDataAccessException) {
+    try {
+        val result: User? = jdbcTemplate?.queryForObject(SQL_FIND_BY_EMAIL, userRowMapper, email)
+        if (!BCrypt.verifyer().verify(password.toCharArray(), result!!.getPassword()).verified) {
             throw EtAuthException("Invalid email or password.")
         }
+        return result
+    } catch (e: EmptyResultDataAccessException) {
+        throw EtAuthException("Invalid email or password.")
     }
+}
 
     override fun getCountByEmail(email: String): Int {
        val result: Int? = jdbcTemplate?.queryForObject(SQL_COUNT_BY_EMAIL, Int::class.java, email)
