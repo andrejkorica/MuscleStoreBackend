@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
+import java.time.LocalDateTime
+import java.time.ZoneId
+
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -45,8 +48,8 @@ class UsersResaurce {
         val password = userMap["password"]
 
         val user : User = userServices.registerUser(firstName!!, lastName!!, email!!, password!!)
-        var map = HashMap<String, String>()
-        map.put("message", "registered successfully")
+        val map = HashMap<String, String>()
+        map["message"] = "registered successfully"
         return ResponseEntity(generateJWTToken(user), HttpStatus.CREATED)
     }
 
@@ -54,18 +57,24 @@ class UsersResaurce {
         val constants = Constants()
         val algorithm = HSAlgorithm.HS256(constants.API_SECRET_KEY)
 
-        val issuedAt = Date()
+        // Define issuedAt LocalDateTime
+        val issuedAtLocalDateTime = LocalDateTime.now()
 
-        val expiration = Date(System.currentTimeMillis() + 3600 * 1000)
+        // Define expiration LocalDateTime (e.g., 1 hour from issuedAt)
+        val expirationLocalDateTime = issuedAtLocalDateTime.plusHours(1)
+
+        // Convert LocalDateTime to Date
+        val issuedAtDate = Date.from(issuedAtLocalDateTime.atZone(ZoneId.systemDefault()).toInstant())
+        val expirationDate = Date.from(expirationLocalDateTime.atZone(ZoneId.systemDefault()).toInstant())
 
         // Create JWT
         val jwt = KtJwtCreator.init()
-            .setIssuedAt(issuedAt)
-            .setExpiresAt(expiration)
-            .addClaim("userId", user.getUserId() ?:0)
-            .addClaim("email", user.getEmail() ?:"")
-            .addClaim("firstName", user.getFirstName() ?:"")
-            .addClaim("lastName", user.getLastName() ?:"")
+            .setIssuedAt(issuedAtDate)
+            .setExpiresAt(expirationDate)
+            .addClaim("userId", user.getUserId() ?: 0)
+            .addClaim("email", user.getEmail() ?: "")
+            .addClaim("firstName", user.getFirstName() ?: "")
+            .addClaim("lastName", user.getLastName() ?: "")
             .sign(algorithm)
 
         val map = mutableMapOf<String, String>()
