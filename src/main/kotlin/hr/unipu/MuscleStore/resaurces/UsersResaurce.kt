@@ -26,7 +26,6 @@ import kotlin.collections.HashMap
 @RequestMapping("/api/users")
 class UsersResaurce {
 
-
     @Autowired
     private lateinit var userServices: userServices
 
@@ -63,14 +62,11 @@ class UsersResaurce {
         // Define expiration LocalDateTime (e.g., 1 hour from issuedAt)
         val expirationLocalDateTime = issuedAtLocalDateTime.plusHours(1)
 
-        // Convert LocalDateTime to Date
-        val issuedAtDate = Date.from(issuedAtLocalDateTime.atZone(ZoneId.systemDefault()).toInstant())
-        val expirationDate = Date.from(expirationLocalDateTime.atZone(ZoneId.systemDefault()).toInstant())
 
         // Create JWT
         val jwt = KtJwtCreator.init()
-            .setIssuedAt(issuedAtDate)
-            .setExpiresAt(expirationDate)
+            .setIssuedAt(issuedAtLocalDateTime)
+            .setExpiresAt(expirationLocalDateTime)
             .addClaim("userId", user.getUserId() ?: 0)
             .addClaim("email", user.getEmail() ?: "")
             .addClaim("firstName", user.getFirstName() ?: "")
