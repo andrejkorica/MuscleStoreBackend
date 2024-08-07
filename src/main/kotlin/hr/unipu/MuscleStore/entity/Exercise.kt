@@ -13,7 +13,7 @@ class Exercise(
     var title: String? = null,
 
     @Column(name = "reps")
-    var reps: Int? = null,
+    var reps: String? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "section_id", nullable = false)
