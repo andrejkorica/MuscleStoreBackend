@@ -4,7 +4,7 @@ import com.brendangoldberg.kotlin_jwt.KtJwtCreator
 import com.brendangoldberg.kotlin_jwt.algorithms.HSAlgorithm
 
 import hr.unipu.MuscleStore.Constants
-import hr.unipu.MuscleStore.Services.userServices
+import hr.unipu.MuscleStore.Services.UserServices
 import hr.unipu.MuscleStore.domain.User
 
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,9 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 import java.time.LocalDateTime
-import java.time.ZoneId
 
-import java.util.*
 import kotlin.collections.HashMap
 
 @RestController
@@ -27,7 +25,7 @@ import kotlin.collections.HashMap
 class UsersResaurce {
 
     @Autowired
-    private lateinit var userServices: userServices
+    private lateinit var userServices: UserServices
 
     @PostMapping("/login")
     fun login(@RequestBody userMap: Map<String, Any>) : ResponseEntity<Map<String, String>> {
@@ -52,30 +50,28 @@ class UsersResaurce {
         return ResponseEntity(generateJWTToken(user), HttpStatus.CREATED)
     }
 
-    private fun generateJWTToken(user : User) : Map <String, String> {
-        val constants = Constants()
-        val algorithm = HSAlgorithm.HS256(constants.API_SECRET_KEY)
+private fun generateJWTToken(user: User): Map<String, String> {
+    val constants = Constants()
+    val algorithm = HSAlgorithm.HS256(constants.API_SECRET_KEY)
 
-        // Define issuedAt LocalDateTime
-        val issuedAtLocalDateTime = LocalDateTime.now()
+    // Define issuedAt LocalDateTime
+    val issuedAtLocalDateTime = LocalDateTime.now()
 
-        // Define expiration LocalDateTime (e.g., 1 hour from issuedAt)
-        val expirationLocalDateTime = issuedAtLocalDateTime.plusHours(1)
+    // Define expiration LocalDateTime (e.g., 1 hour from issuedAt)
+    val expirationLocalDateTime = issuedAtLocalDateTime.plusHours(1)
 
+    // Create JWT
+    val jwt = KtJwtCreator.init()
+        .setIssuedAt(issuedAtLocalDateTime)
+        .setExpiresAt(expirationLocalDateTime)
+        .addClaim("userId", user.userId ?: 0)
+        .addClaim("email", user.email ?: "")
+        .addClaim("firstName", user.firstName ?: "")
+        .addClaim("lastName", user.lastName ?: "")
+        .sign(algorithm)
 
-        // Create JWT
-        val jwt = KtJwtCreator.init()
-            .setIssuedAt(issuedAtLocalDateTime)
-            .setExpiresAt(expirationLocalDateTime)
-            .addClaim("userId", user.getUserId() ?: 0)
-            .addClaim("email", user.getEmail() ?: "")
-            .addClaim("firstName", user.getFirstName() ?: "")
-            .addClaim("lastName", user.getLastName() ?: "")
-            .sign(algorithm)
+    return mapOf("token" to jwt)
+}
 
-        val map = mutableMapOf<String, String>()
-        map["token"] = jwt
-        return map
-    }
 
 }

@@ -4,7 +4,7 @@ import hr.unipu.MuscleStore.domain.User
 import hr.unipu.MuscleStore.exception.EtAuthException
 import kotlin.jvm.Throws
 
-interface userRepository {
+interface UserRepository {
 
     @Throws(EtAuthException::class)
     fun create(firstName: String, lastName: String, email: String, password: String): Int;

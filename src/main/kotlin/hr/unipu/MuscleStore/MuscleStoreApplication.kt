@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Bean
 class MuscleStoreApplication {
 	@Bean
 	fun authFilterRegistrationBean(): FilterRegistrationBean<AuthFilter> {
-		println("test")
 		val registration = FilterRegistrationBean<AuthFilter>()
 		val authFilter = AuthFilter()
 		registration.filter = authFilter

@@ -1,9 +1,9 @@
 package hr.unipu.MuscleStore.Services.Implementation
 
-import hr.unipu.MuscleStore.Services.userServices
+import hr.unipu.MuscleStore.Services.UserServices
 import hr.unipu.MuscleStore.domain.User
 import hr.unipu.MuscleStore.exception.EtAuthException
-import hr.unipu.MuscleStore.repositories.userRepository
+import hr.unipu.MuscleStore.repositories.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -12,10 +12,10 @@ import java.util.regex.Pattern
 
 @Service
 @Transactional
-class userServiceImpl : userServices {
+class UserServiceImpl : UserServices {
 
     @Autowired
-    private lateinit var userRepository: userRepository
+    private lateinit var userRepository: UserRepository
 
     override fun validateUser(email: String, password: String): User {
         val emailLower = email.lowercase(Locale.getDefault())
