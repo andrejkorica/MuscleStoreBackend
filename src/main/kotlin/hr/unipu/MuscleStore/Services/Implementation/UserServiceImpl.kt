@@ -38,4 +38,11 @@ class UserServiceImpl : UserServices {
         return userRepository.findById(userId)
     }
 
+    override fun updateProfilePicture(userId: Int, profilePicture: String): User {
+        val user = userRepository.findById(userId)
+        userRepository.updateProfilePicture(userId, profilePicture)
+        user.profilePicture = profilePicture
+        return user
+    }
+
 }

@@ -19,9 +19,13 @@ class User(
     var email: String? = null,
 
     @Column(name = "password")
-    var password: String? = null
+    var password: String? = null,
+
+    @Column(name = "profile_picture")
+    var profilePicture: String? = null
+
 ) {
     // Default no-arg constructor
-    constructor() : this(null, null, null, null, null)
+    constructor() : this(null, null, null, null, null, null)
 
 }

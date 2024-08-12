@@ -7,7 +7,8 @@ user_id integer primary key not null,
 first_name varchar(20) not null,
 last_name varchar(20) not null,
 email varchar(30) not null,
-password text not null
+password text not null,
+profile_picture text
 );
 
 -- Create workout_plans table
@@ -37,6 +38,7 @@ TRUNCATE TABLE et_users CASCADE;
 
 TRUNCATE TABLE workout_plans, plan_sections, exercises CASCADE;
 
+DROP TABLE IF EXISTS et_users;
 DROP TABLE IF EXISTS exercises;
 DROP TABLE IF EXISTS plan_sections;
 DROP TABLE IF EXISTS workout_plans;

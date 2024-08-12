@@ -121,6 +121,8 @@ class WorkoutPlanResource @Autowired constructor(
         }
     }
 
+
+
     // Define a request DTO for creating a workout plan
     data class CreateWorkoutPlanRequest(
         val userId: Int,

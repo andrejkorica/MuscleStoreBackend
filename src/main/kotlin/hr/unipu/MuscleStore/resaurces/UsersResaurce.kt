@@ -11,10 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 import java.time.LocalDateTime
 
@@ -50,28 +47,41 @@ class UsersResaurce {
         return ResponseEntity(generateJWTToken(user), HttpStatus.CREATED)
     }
 
-private fun generateJWTToken(user: User): Map<String, String> {
-    val constants = Constants()
-    val algorithm = HSAlgorithm.HS256(constants.API_SECRET_KEY)
+    private fun generateJWTToken(user: User): Map<String, String> {
+        val constants = Constants()
+        val algorithm = HSAlgorithm.HS256(constants.API_SECRET_KEY)
 
-    // Define issuedAt LocalDateTime
-    val issuedAtLocalDateTime = LocalDateTime.now()
+        // Define issuedAt LocalDateTime
+        val issuedAtLocalDateTime = LocalDateTime.now()
 
-    // Define expiration LocalDateTime (e.g., 1 hour from issuedAt)
-    val expirationLocalDateTime = issuedAtLocalDateTime.plusHours(1)
+        // Define expiration LocalDateTime (e.g., 1 hour from issuedAt)
+        val expirationLocalDateTime = issuedAtLocalDateTime.plusHours(1)
 
-    // Create JWT
-    val jwt = KtJwtCreator.init()
-        .setIssuedAt(issuedAtLocalDateTime)
-        .setExpiresAt(expirationLocalDateTime)
-        .addClaim("userId", user.userId ?: 0)
-        .addClaim("email", user.email ?: "")
-        .addClaim("firstName", user.firstName ?: "")
-        .addClaim("lastName", user.lastName ?: "")
-        .sign(algorithm)
+        // Create JWT
+        val jwt = KtJwtCreator.init()
+            .setIssuedAt(issuedAtLocalDateTime)
+            .setExpiresAt(expirationLocalDateTime)
+            .addClaim("userId", user.userId ?: 0)
+            .addClaim("email", user.email ?: "")
+            .addClaim("firstName", user.firstName ?: "")
+            .addClaim("lastName", user.lastName ?: "")
+            .sign(algorithm)
 
-    return mapOf("token" to jwt)
-}
+        return mapOf("token" to jwt)
+    }
 
+ @PostMapping("/{userId}/profile-picture")
+    fun updateProfilePicture(
+        @PathVariable userId: Int,
+        @RequestBody profilePictureMap: Map<String, String>
+    ): ResponseEntity<Map<String, String>> {
+        val profilePicture = profilePictureMap["profilePicture"]
+        if (profilePicture.isNullOrBlank()) {
+            return ResponseEntity(mapOf("message" to "Profile picture is required"), HttpStatus.BAD_REQUEST)
+        }
+
+        userServices.updateProfilePicture(userId, profilePicture)
+        return ResponseEntity(mapOf("message" to "Profile picture updated successfully"), HttpStatus.OK)
+    }
 
 }

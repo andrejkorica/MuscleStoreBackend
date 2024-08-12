@@ -21,6 +21,7 @@ class UserRepositoryImpl : UserRepository {
     private val SQL_COUNT_BY_EMAIL: String = "SELECT COUNT(*) FROM et_users WHERE EMAIL = ?"
     private val SQL_FIND_BY_ID: String = "SELECT USER_ID, FIRST_NAME, LAST_NAME, EMAIL, PASSWORD FROM et_users WHERE USER_ID = ?"
     private val SQL_FIND_BY_EMAIL: String = "SELECT USER_ID, FIRST_NAME, LAST_NAME, EMAIL, PASSWORD FROM et_users WHERE EMAIL = ?"
+    private val SQL_UPDATE_PROFILE_PICTURE = "UPDATE et_users SET PROFILE_PICTURE = ? WHERE USER_ID = ?"
 
     @Autowired
     private lateinit var jdbcTemplate: JdbcTemplate
@@ -75,5 +76,16 @@ class UserRepositoryImpl : UserRepository {
             email = rs.getString("EMAIL"),
             password = rs.getString("PASSWORD")
         )
+    }
+
+    override fun updateProfilePicture(userId: Int, profilePicture: String) {
+        try {
+            val rowsAffected = jdbcTemplate.update(SQL_UPDATE_PROFILE_PICTURE, profilePicture, userId)
+            if (rowsAffected == 0) {
+                throw EtAuthException("Failed to update profile picture. User not found.")
+            }
+        } catch (e: Exception) {
+            throw EtAuthException("An error occurred while updating the profile picture.")
+        }
     }
 }

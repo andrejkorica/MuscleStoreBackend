@@ -16,4 +16,7 @@ interface UserRepository {
 
     fun findById(id: Int): User;
 
+    @Throws(EtAuthException::class)
+    fun updateProfilePicture(userId: Int, profilePicture: String)
+
 }
