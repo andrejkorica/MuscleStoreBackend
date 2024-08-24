@@ -38,11 +38,6 @@ TRUNCATE TABLE et_users CASCADE;
 
 TRUNCATE TABLE workout_plans, plan_sections, exercises CASCADE;
 
-DROP TABLE IF EXISTS et_users;
-DROP TABLE IF EXISTS exercises;
-DROP TABLE IF EXISTS plan_sections;
-DROP TABLE IF EXISTS workout_plans;
-
 
 
 

@@ -17,7 +17,7 @@ import java.sql.Statement
 @Repository
 class UserRepositoryImpl : UserRepository {
 
-    private val SQL_CREATE: String = "INSERT INTO et_users (USER_ID, FIRST_NAME, LAST_NAME, EMAIL, PASSWORD) VALUES (NEXTVAL('ET_USERS_SEQ'), ?, ?, ?, ?)"
+    private val SQL_CREATE: String = "INSERT INTO et_users (FIRST_NAME, LAST_NAME, EMAIL, PASSWORD) VALUES (?, ?, ?, ?)"
     private val SQL_COUNT_BY_EMAIL: String = "SELECT COUNT(*) FROM et_users WHERE EMAIL = ?"
     private val SQL_FIND_BY_ID: String = "SELECT USER_ID, FIRST_NAME, LAST_NAME, EMAIL, PASSWORD FROM et_users WHERE USER_ID = ?"
     private val SQL_FIND_BY_EMAIL: String = "SELECT USER_ID, FIRST_NAME, LAST_NAME, EMAIL, PASSWORD FROM et_users WHERE EMAIL = ?"

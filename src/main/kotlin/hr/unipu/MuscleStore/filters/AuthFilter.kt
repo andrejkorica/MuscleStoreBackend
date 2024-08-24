@@ -55,6 +55,6 @@ import org.springframework.web.filter.GenericFilterBean
                 return;
             }
             // Continue the filter chain
-            chain?.doFilter(request, response)
+                chain?.doFilter(request, response)
         }
     }

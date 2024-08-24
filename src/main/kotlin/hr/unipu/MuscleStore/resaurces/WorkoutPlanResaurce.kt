@@ -2,11 +2,12 @@ package hr.unipu.MuscleStore.resources
 
 import hr.unipu.MuscleStore.Services.workoutPlanService
 import hr.unipu.MuscleStore.domain.User
-import hr.unipu.MuscleStore.domain.WorkoutPlan
 import hr.unipu.MuscleStore.entity.PlanSection
 import hr.unipu.MuscleStore.entity.Exercise
 import hr.unipu.MuscleStore.exception.WorkoutPlanCreationException
 import hr.unipu.MuscleStore.exception.WorkoutPlanNotFoundException
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpSession
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -17,7 +18,7 @@ import org.slf4j.LoggerFactory
 @RestController
 @RequestMapping("/api/workout-plans")
 class WorkoutPlanResource @Autowired constructor(
-    private val workoutPlanService: workoutPlanService
+    private val workoutPlanService: workoutPlanService,
 ) {
 
     // Create a Logger instance
@@ -25,17 +26,18 @@ class WorkoutPlanResource @Autowired constructor(
 
     @PostMapping
     fun createWorkoutPlan(
-        @RequestBody request: CreateWorkoutPlanRequest
+        @RequestBody request: CreateWorkoutPlanRequest,
+        httpRequest: HttpServletRequest
     ): ResponseEntity<Map<String, Any>> {
         logger.debug("Received request to create workout plan: $request") // Log the entire request
 
         return try {
             // Create or retrieve the User entity
-            val user = User(request.userId)
+            val user = User(httpRequest.getAttribute("userId") as Int)
 
             // Map DTOs to entities
             val sections = request.sections.map { sectionDTO ->
-                // Create PlanSection
+            // Create PlanSection
                 val planSection = PlanSection(
                     sectionId = sectionDTO.sectionId ?: 0, // Default value for new sections
                     title = sectionDTO.title,
@@ -125,7 +127,6 @@ class WorkoutPlanResource @Autowired constructor(
 
     // Define a request DTO for creating a workout plan
     data class CreateWorkoutPlanRequest(
-        val userId: Int,
         val title: String,
         val sections: List<PlanSectionDTO>
     )

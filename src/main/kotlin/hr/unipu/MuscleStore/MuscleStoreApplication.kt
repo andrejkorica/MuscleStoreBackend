@@ -14,7 +14,7 @@ class MuscleStoreApplication {
 		val registration = FilterRegistrationBean<AuthFilter>()
 		val authFilter = AuthFilter()
 		registration.filter = authFilter
-		registration.addUrlPatterns("/api/categories/*")
+		registration.addUrlPatterns("/api/workout-plans/*")
 		return registration
 	}
 
