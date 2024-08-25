@@ -21,7 +21,8 @@ class User(
     @Column(name = "password")
     var password: String? = null,
 
-    @Column(name = "profile_picture")
+    @Column(name = "profile_picture", columnDefinition = "TEXT")
+    @Lob
     var profilePicture: String? = null
 
 ) {

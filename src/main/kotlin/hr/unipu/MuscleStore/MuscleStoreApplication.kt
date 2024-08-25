@@ -15,6 +15,7 @@ class MuscleStoreApplication {
 		val authFilter = AuthFilter()
 		registration.filter = authFilter
 		registration.addUrlPatterns("/api/workout-plans/*")
+		registration.addUrlPatterns("/api/users/profile-picture")
 		return registration
 	}
 

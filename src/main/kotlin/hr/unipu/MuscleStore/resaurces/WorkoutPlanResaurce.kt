@@ -37,7 +37,7 @@ class WorkoutPlanResource @Autowired constructor(
 
             // Map DTOs to entities
             val sections = request.sections.map { sectionDTO ->
-            // Create PlanSection
+                // Create PlanSection
                 val planSection = PlanSection(
                     sectionId = sectionDTO.sectionId ?: 0, // Default value for new sections
                     title = sectionDTO.title,
@@ -86,10 +86,11 @@ class WorkoutPlanResource @Autowired constructor(
         }
     }
 
-    @GetMapping("/user/{userId}")
-    fun getWorkoutPlansByUserId(
-        @PathVariable userId: Int
+    @GetMapping("/user")
+    fun getWorkoutPlansForUser(
+        httpRequest: HttpServletRequest
     ): ResponseEntity<Any> {
+        val userId = httpRequest.getAttribute("userId") as Int
         logger.debug("Received request to get workout plans for userId: $userId") // Log the userId
 
         return try {
@@ -122,8 +123,6 @@ class WorkoutPlanResource @Autowired constructor(
             ResponseEntity(errorResponse, HttpStatus.NOT_FOUND)
         }
     }
-
-
 
     // Define a request DTO for creating a workout plan
     data class CreateWorkoutPlanRequest(

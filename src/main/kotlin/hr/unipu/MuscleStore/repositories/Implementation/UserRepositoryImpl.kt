@@ -79,13 +79,25 @@ class UserRepositoryImpl : UserRepository {
     }
 
     override fun updateProfilePicture(userId: Int, profilePicture: String) {
+        // Log the values being used for debugging
+        println("Updating profile picture for userId: $userId")
+        println("Profile picture data: $profilePicture")
+
+        if (userId <= 0) {
+            throw EtAuthException("Invalid userId.")
+        }
+
         try {
             val rowsAffected = jdbcTemplate.update(SQL_UPDATE_PROFILE_PICTURE, profilePicture, userId)
             if (rowsAffected == 0) {
                 throw EtAuthException("Failed to update profile picture. User not found.")
             }
         } catch (e: Exception) {
+            // Log exception details
+            println("Exception occurred while updating profile picture: ${e.message}")
             throw EtAuthException("An error occurred while updating the profile picture.")
         }
     }
+
+
 }

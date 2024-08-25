@@ -1,4 +1,4 @@
-package hr.unipu.MuscleStore.resaurces
+package hr.unipu.MuscleStore.resources
 
 import com.brendangoldberg.kotlin_jwt.KtJwtCreator
 import com.brendangoldberg.kotlin_jwt.algorithms.HSAlgorithm
@@ -15,11 +15,15 @@ import org.springframework.web.bind.annotation.*
 
 import java.time.LocalDateTime
 
+import jakarta.servlet.http.HttpServletRequest
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import kotlin.collections.HashMap
 
 @RestController
 @RequestMapping("/api/users")
-class UsersResaurce {
+class UsersResource {
+    private val logger: Logger = LoggerFactory.getLogger(WorkoutPlanResource::class.java)
 
     @Autowired
     private lateinit var userServices: UserServices
@@ -70,15 +74,12 @@ class UsersResaurce {
         return mapOf("token" to jwt)
     }
 
- @PostMapping("/{userId}/profile-picture")
+    @PostMapping("/profile-picture")
     fun updateProfilePicture(
-        @PathVariable userId: Int,
-        @RequestBody profilePictureMap: Map<String, String>
+        @RequestBody profilePicture: String,  // Expect the Base64 string directly
+        httpRequest: HttpServletRequest
     ): ResponseEntity<Map<String, String>> {
-        val profilePicture = profilePictureMap["profilePicture"]
-        if (profilePicture.isNullOrBlank()) {
-            return ResponseEntity(mapOf("message" to "Profile picture is required"), HttpStatus.BAD_REQUEST)
-        }
+        val userId =  httpRequest.getAttribute("userId") as Int
 
         userServices.updateProfilePicture(userId, profilePicture)
         return ResponseEntity(mapOf("message" to "Profile picture updated successfully"), HttpStatus.OK)

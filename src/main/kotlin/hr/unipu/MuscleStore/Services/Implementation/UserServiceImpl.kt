@@ -4,6 +4,9 @@ import hr.unipu.MuscleStore.Services.UserServices
 import hr.unipu.MuscleStore.domain.User
 import hr.unipu.MuscleStore.exception.EtAuthException
 import hr.unipu.MuscleStore.repositories.UserRepository
+import hr.unipu.MuscleStore.resources.WorkoutPlanResource
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -14,6 +17,7 @@ import java.util.regex.Pattern
 @Transactional
 class UserServiceImpl : UserServices {
 
+    private val logger: Logger = LoggerFactory.getLogger(WorkoutPlanResource::class.java)
     @Autowired
     private lateinit var userRepository: UserRepository
 
@@ -39,9 +43,11 @@ class UserServiceImpl : UserServices {
     }
 
     override fun updateProfilePicture(userId: Int, profilePicture: String): User {
+
         val user = userRepository.findById(userId)
         userRepository.updateProfilePicture(userId, profilePicture)
         user.profilePicture = profilePicture
+
         return user
     }
 
