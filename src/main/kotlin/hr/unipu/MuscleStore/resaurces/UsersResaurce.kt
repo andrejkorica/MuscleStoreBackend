@@ -6,6 +6,7 @@ import com.brendangoldberg.kotlin_jwt.algorithms.HSAlgorithm
 import hr.unipu.MuscleStore.Constants
 import hr.unipu.MuscleStore.Services.UserServices
 import hr.unipu.MuscleStore.domain.User
+import hr.unipu.MuscleStore.repositories.UserRepository
 
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -27,6 +28,9 @@ class UsersResource {
 
     @Autowired
     private lateinit var userServices: UserServices
+
+    @Autowired
+    private lateinit var userRepository: UserRepository
 
     @PostMapping("/login")
     fun login(@RequestBody userMap: Map<String, Any>) : ResponseEntity<Map<String, String>> {
@@ -50,6 +54,16 @@ class UsersResource {
         map["message"] = "registered successfully"
         return ResponseEntity(generateJWTToken(user), HttpStatus.CREATED)
     }
+
+    @GetMapping("/me")
+    fun getUserDetails(httpRequest: HttpServletRequest): ResponseEntity<User> {
+        val userId = httpRequest.getAttribute("userId") as? Int
+            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+
+        val user: User = userRepository.findById(userId)
+        return ResponseEntity(user, HttpStatus.OK)
+    }
+
 
     private fun generateJWTToken(user: User): Map<String, String> {
         val constants = Constants()

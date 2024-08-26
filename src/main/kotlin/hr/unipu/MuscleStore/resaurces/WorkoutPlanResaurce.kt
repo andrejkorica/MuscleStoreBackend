@@ -7,7 +7,6 @@ import hr.unipu.MuscleStore.entity.Exercise
 import hr.unipu.MuscleStore.exception.WorkoutPlanCreationException
 import hr.unipu.MuscleStore.exception.WorkoutPlanNotFoundException
 import jakarta.servlet.http.HttpServletRequest
-import jakarta.servlet.http.HttpSession
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -21,7 +20,6 @@ class WorkoutPlanResource @Autowired constructor(
     private val workoutPlanService: workoutPlanService,
 ) {
 
-    // Create a Logger instance
     private val logger: Logger = LoggerFactory.getLogger(WorkoutPlanResource::class.java)
 
     @PostMapping
@@ -29,50 +27,41 @@ class WorkoutPlanResource @Autowired constructor(
         @RequestBody request: CreateWorkoutPlanRequest,
         httpRequest: HttpServletRequest
     ): ResponseEntity<Map<String, Any>> {
-        logger.debug("Received request to create workout plan: $request") // Log the entire request
+        logger.debug("Received request to create workout plan: $request")
 
         return try {
-            // Create or retrieve the User entity
             val user = User(httpRequest.getAttribute("userId") as Int)
 
-            // Map DTOs to entities
             val sections = request.sections.map { sectionDTO ->
-                // Create PlanSection
                 val planSection = PlanSection(
-                    sectionId = sectionDTO.sectionId ?: 0, // Default value for new sections
+                    sectionId = sectionDTO.sectionId ?: 0,
                     title = sectionDTO.title,
-                    exercises = mutableListOf() // Initialize with an empty list
+                    exercises = mutableListOf()
                 )
 
-                // Create and associate Exercises with the PlanSection
                 val exercises = sectionDTO.exercises.map { exerciseDTO ->
                     Exercise(
-                        exerciseId = exerciseDTO.exerciseId ?: 0, // Default value for new exercises
+                        exerciseId = exerciseDTO.exerciseId ?: 0,
                         title = exerciseDTO.title,
                         reps = exerciseDTO.reps,
-                        planSection = planSection // Set the relationship
+                        planSection = planSection
                     )
-                }.toMutableList() // Ensure MutableList for Hibernate
+                }.toMutableList()
 
-                // Set the exercises to the PlanSection
                 planSection.exercises.addAll(exercises)
-
                 planSection
             }
 
-            // Log sections and their exercises
             sections.forEach { section ->
                 logger.debug("Section: ${section.title}, Exercises: ${section.exercises.map { it.title }}")
             }
 
-            // Create workout plan
             val workoutPlan = workoutPlanService.createWorkoutPlan(
                 user = user,
                 title = request.title,
                 sections = sections
             )
 
-            // Return success response
             ResponseEntity(
                 mapOf(
                     "message" to "Workout Plan created successfully",
@@ -80,7 +69,6 @@ class WorkoutPlanResource @Autowired constructor(
                 ), HttpStatus.CREATED
             )
         } catch (e: WorkoutPlanCreationException) {
-            // Handle the exception and return a proper response
             val errorResponse = mapOf("error" to (e.message ?: "Unknown error"))
             ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
         }
@@ -91,25 +79,29 @@ class WorkoutPlanResource @Autowired constructor(
         httpRequest: HttpServletRequest
     ): ResponseEntity<Any> {
         val userId = httpRequest.getAttribute("userId") as Int
-        logger.debug("Received request to get workout plans for userId: $userId") // Log the userId
 
         return try {
             val workoutPlans = workoutPlanService.getWorkoutPlansByUserId(userId)
 
-            // Map to DTOs
             val response = workoutPlans.map { plan ->
                 WorkoutPlanResponse(
-                    planId = plan.planId ?: 0,  // Provide default value if null
-                    title = plan.title ?: "",  // Provide default value if null
-                    userId = userId,  // Non-nullable
+                    planId = plan.planId ?: 0,
+                    title = plan.title ?: "",
+                    user = UserDTO(
+                        userId = plan.user?.userId ?: 0,
+                        email = plan.user?.email,
+                        firstName = plan.user?.firstName,
+                        lastName = plan.user?.lastName,
+                        profilePicture = plan.user?.profilePicture
+                    ),
                     sections = plan.sections.map { section ->
                         PlanSectionDTO(
-                            sectionId = section.sectionId ?: 0,  // Provide default value if null
-                            title = section.title ?: "",  // Provide default value if null
+                            sectionId = section.sectionId ?: 0,
+                            title = section.title ?: "",
                             exercises = section.exercises.map { exercise ->
                                 ExerciseDTO(
-                                    exerciseId = exercise.exerciseId ?: 0,  // Provide default value if null
-                                    title = exercise.title ?: "",  // Provide default value if null
+                                    exerciseId = exercise.exerciseId ?: 0,
+                                    title = exercise.title ?: "",
                                     reps = exercise.reps ?: ""
                                 )
                             }
@@ -130,6 +122,14 @@ class WorkoutPlanResource @Autowired constructor(
         val sections: List<PlanSectionDTO>
     )
 
+    data class UserDTO(
+        val userId: Int,
+        val email: String?,
+        val firstName: String?,
+        val lastName: String?,
+        val profilePicture: String?
+    )
+
     data class ExerciseDTO(
         val exerciseId: Int?,
         val title: String,
@@ -145,7 +145,7 @@ class WorkoutPlanResource @Autowired constructor(
     data class WorkoutPlanResponse(
         val planId: Int?,
         val title: String?,
-        val userId: Int,
+        val user: UserDTO, // Changed from userId to UserDTO
         val sections: List<PlanSectionDTO>
     )
 }

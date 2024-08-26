@@ -16,6 +16,7 @@ class MuscleStoreApplication {
 		registration.filter = authFilter
 		registration.addUrlPatterns("/api/workout-plans/*")
 		registration.addUrlPatterns("/api/users/profile-picture")
+		registration.addUrlPatterns("/api/users/me")
 		return registration
 	}
 

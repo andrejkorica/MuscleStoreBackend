@@ -1,6 +1,7 @@
 package hr.unipu.MuscleStore.domain
 
 import jakarta.persistence.*
+import org.hibernate.annotations.Type
 
 @Entity
 @Table(name = "et_users")
@@ -21,8 +22,7 @@ class User(
     @Column(name = "password")
     var password: String? = null,
 
-    @Column(name = "profile_picture", columnDefinition = "TEXT")
-    @Lob
+    @Column(name = "profile_picture", columnDefinition = "CLOB")
     var profilePicture: String? = null
 
 ) {
