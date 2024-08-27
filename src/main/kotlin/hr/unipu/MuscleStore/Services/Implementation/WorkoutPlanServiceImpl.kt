@@ -13,6 +13,7 @@ import hr.unipu.MuscleStore.repositories.ExerciseRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 @Transactional
@@ -23,13 +24,15 @@ class WorkoutPlanServiceImpl @Autowired constructor(
 ) : workoutPlanService {
 
     @Throws(WorkoutPlanCreationException::class)
-    override fun createWorkoutPlan(user: User, title: String, sections: List<PlanSection>): WorkoutPlan {
+    override fun createWorkoutPlan(user: User, title: String, timestamp: LocalDateTime, sections: List<PlanSection>): WorkoutPlan {
         try {
-            println("Creating workout plan with title: $title ")
+            println("Creating workout plan with title: $title at timestamp: $timestamp")
 
             val workoutPlan = WorkoutPlan(
                 user = user,
-                title = title
+                title = title,
+                timestamp = timestamp,  // Set the timestamp here
+                sections = sections.toMutableList()
             )
 
             // Save WorkoutPlan first
@@ -99,5 +102,14 @@ class WorkoutPlanServiceImpl @Autowired constructor(
         }
 
         return planSection
+    }
+
+    @Throws(WorkoutPlanNotFoundException::class)
+    override fun getAllWorkoutPlans(): List<WorkoutPlan> {
+        val workoutPlans = workoutPlanRepository.findAll()
+        if (workoutPlans.isEmpty()) {
+            throw WorkoutPlanNotFoundException("No workout plans found")
+        }
+        return workoutPlans
     }
 }

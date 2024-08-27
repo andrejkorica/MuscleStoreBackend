@@ -19,9 +19,12 @@ class WorkoutPlan(
     @Column(name = "title")
     var title: String? = null,
 
+    @Column(name = "timestamp")
+    var timestamp: LocalDateTime? = null,
+
     @OneToMany(mappedBy = "workoutPlan", cascade = [CascadeType.ALL], orphanRemoval = true)
     var sections: MutableList<PlanSection> = mutableListOf()
 ) {
     // Default no-arg constructor
-    constructor() : this(null, null, null, mutableListOf())
+    constructor() : this(null, null, null, null, mutableListOf() )
 }

@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.LocalDateTime
 
 @RestController
 @RequestMapping("/api/workout-plans")
@@ -27,7 +28,6 @@ class WorkoutPlanResource @Autowired constructor(
         @RequestBody request: CreateWorkoutPlanRequest,
         httpRequest: HttpServletRequest
     ): ResponseEntity<Map<String, Any>> {
-        logger.debug("Received request to create workout plan: $request")
 
         return try {
             val user = User(httpRequest.getAttribute("userId") as Int)
@@ -52,20 +52,20 @@ class WorkoutPlanResource @Autowired constructor(
                 planSection
             }
 
-            sections.forEach { section ->
-                logger.debug("Section: ${section.title}, Exercises: ${section.exercises.map { it.title }}")
-            }
+            val timestamp = request.timestamp ?: LocalDateTime.now()
 
             val workoutPlan = workoutPlanService.createWorkoutPlan(
                 user = user,
                 title = request.title,
+                timestamp = timestamp,  // Set the timestamp
                 sections = sections
             )
 
             ResponseEntity(
                 mapOf(
                     "message" to "Workout Plan created successfully",
-                    "workoutPlanId" to workoutPlan.planId!!
+                    "workoutPlanId" to workoutPlan.planId!!,
+                    "timestamp" to workoutPlan.timestamp.toString()  // Convert timestamp to String
                 ), HttpStatus.CREATED
             )
         } catch (e: WorkoutPlanCreationException) {
@@ -73,6 +73,9 @@ class WorkoutPlanResource @Autowired constructor(
             ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
         }
     }
+
+
+
 
     @GetMapping("/user")
     fun getWorkoutPlansForUser(
@@ -87,6 +90,7 @@ class WorkoutPlanResource @Autowired constructor(
                 WorkoutPlanResponse(
                     planId = plan.planId ?: 0,
                     title = plan.title ?: "",
+                    timestamp = plan.timestamp,  // Include timestamp in response
                     user = UserDTO(
                         userId = plan.user?.userId ?: 0,
                         email = plan.user?.email,
@@ -116,10 +120,52 @@ class WorkoutPlanResource @Autowired constructor(
         }
     }
 
+
+    @GetMapping
+    fun getAllWorkoutPlans(): ResponseEntity<Any> {
+        return try {
+            val workoutPlans = workoutPlanService.getAllWorkoutPlans()
+
+            val response = workoutPlans.map { plan ->
+                WorkoutPlanResponse(
+                    planId = plan.planId ?: 0,
+                    title = plan.title ?: "",
+                    timestamp = plan.timestamp,  // Include timestamp in response
+                    user = UserDTO(
+                        userId = plan.user?.userId ?: 0,
+                        email = plan.user?.email,
+                        firstName = plan.user?.firstName,
+                        lastName = plan.user?.lastName,
+                        profilePicture = plan.user?.profilePicture
+                    ),
+                    sections = plan.sections.map { section ->
+                        PlanSectionDTO(
+                            sectionId = section.sectionId ?: 0,
+                            title = section.title ?: "",
+                            exercises = section.exercises.map { exercise ->
+                                ExerciseDTO(
+                                    exerciseId = exercise.exerciseId ?: 0,
+                                    title = exercise.title ?: "",
+                                    reps = exercise.reps ?: ""
+                                )
+                            }
+                        )
+                    }
+                )
+            }
+            ResponseEntity.ok(response)
+        } catch (e: WorkoutPlanNotFoundException) {
+            val errorResponse = mapOf("error" to (e.message ?: "No workout plans found"))
+            ResponseEntity(errorResponse, HttpStatus.NOT_FOUND)
+        }
+    }
+
+
     // Define a request DTO for creating a workout plan
     data class CreateWorkoutPlanRequest(
         val title: String,
-        val sections: List<PlanSectionDTO>
+        val sections: List<PlanSectionDTO>,
+        val timestamp: LocalDateTime? = null
     )
 
     data class UserDTO(
@@ -145,6 +191,7 @@ class WorkoutPlanResource @Autowired constructor(
     data class WorkoutPlanResponse(
         val planId: Int?,
         val title: String?,
+        val timestamp: LocalDateTime?,
         val user: UserDTO, // Changed from userId to UserDTO
         val sections: List<PlanSectionDTO>
     )
