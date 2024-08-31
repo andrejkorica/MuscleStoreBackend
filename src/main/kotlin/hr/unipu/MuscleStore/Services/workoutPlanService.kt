@@ -23,4 +23,7 @@ interface workoutPlanService {
 
     @Throws(WorkoutPlanNotFoundException::class)
     fun getAllWorkoutPlans(): List<WorkoutPlan>
+
+    @Throws(WorkoutPlanNotFoundException::class)
+    fun getWorkoutPlanById(planId: Int): WorkoutPlan
 }

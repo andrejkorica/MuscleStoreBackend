@@ -22,7 +22,7 @@ class WorkoutPlan(
     @Column(name = "timestamp")
     var timestamp: LocalDateTime? = null,
 
-    @OneToMany(mappedBy = "workoutPlan", cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToMany(mappedBy = "workoutPlan", cascade = [CascadeType.MERGE], orphanRemoval = true)
     var sections: MutableList<PlanSection> = mutableListOf()
 ) {
     // Default no-arg constructor

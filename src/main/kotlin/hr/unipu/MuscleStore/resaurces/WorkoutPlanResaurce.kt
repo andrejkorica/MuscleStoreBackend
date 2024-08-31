@@ -159,6 +159,46 @@ class WorkoutPlanResource @Autowired constructor(
             ResponseEntity(errorResponse, HttpStatus.NOT_FOUND)
         }
     }
+    @GetMapping("/{planId}")
+    fun getWorkoutPlanById(
+        @PathVariable planId: Int
+    ): ResponseEntity<Any> {
+        return try {
+            val workoutPlan = workoutPlanService.getWorkoutPlanById(planId)
+
+            val response = WorkoutPlanResponse(
+                planId = workoutPlan.planId ?: 0,
+                title = workoutPlan.title ?: "",
+                timestamp = workoutPlan.timestamp,  // Include timestamp in response
+                user = UserDTO(
+                    userId = workoutPlan.user?.userId ?: 0,
+                    email = workoutPlan.user?.email,
+                    firstName = workoutPlan.user?.firstName,
+                    lastName = workoutPlan.user?.lastName,
+                    profilePicture = workoutPlan.user?.profilePicture
+                ),
+                sections = workoutPlan.sections.map { section ->
+                    PlanSectionDTO(
+                        sectionId = section.sectionId ?: 0,
+                        title = section.title ?: "",
+                        exercises = section.exercises.map { exercise ->
+                            ExerciseDTO(
+                                exerciseId = exercise.exerciseId ?: 0,
+                                title = exercise.title ?: "",
+                                reps = exercise.reps ?: ""
+                            )
+                        }
+                    )
+                }
+            )
+            ResponseEntity.ok(response)
+        } catch (e: WorkoutPlanNotFoundException) {
+            val errorResponse = mapOf("error" to (e.message ?: "Workout plan not found"))
+            ResponseEntity(errorResponse, HttpStatus.NOT_FOUND)
+        }
+    }
+
+
 
 
     // Define a request DTO for creating a workout plan

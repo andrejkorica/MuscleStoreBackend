@@ -18,7 +18,7 @@ class PlanSection(
     @Column(name = "title")
     var title: String? = null,
 
-    @OneToMany(mappedBy = "planSection", cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToMany(mappedBy = "planSection", cascade = [CascadeType.MERGE], orphanRemoval = true)
     var exercises: MutableList<Exercise> = mutableListOf()
 ) {
     // Default no-arg constructor

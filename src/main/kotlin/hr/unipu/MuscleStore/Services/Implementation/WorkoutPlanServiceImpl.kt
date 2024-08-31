@@ -112,4 +112,10 @@ class WorkoutPlanServiceImpl @Autowired constructor(
         }
         return workoutPlans
     }
+
+    @Throws(WorkoutPlanNotFoundException::class)
+    override fun getWorkoutPlanById(planId: Int): WorkoutPlan {
+        return workoutPlanRepository.findById(planId)
+            .orElseThrow { WorkoutPlanNotFoundException("Workout plan with ID $planId not found") }
+    }
 }
