@@ -21,8 +21,6 @@ class WorkoutPlanResource @Autowired constructor(
     private val workoutPlanService: workoutPlanService,
 ) {
 
-    private val logger: Logger = LoggerFactory.getLogger(WorkoutPlanResource::class.java)
-
     @PostMapping
     fun createWorkoutPlan(
         @RequestBody request: CreateWorkoutPlanRequest,
@@ -195,6 +193,22 @@ class WorkoutPlanResource @Autowired constructor(
         } catch (e: WorkoutPlanNotFoundException) {
             val errorResponse = mapOf("error" to (e.message ?: "Workout plan not found"))
             ResponseEntity(errorResponse, HttpStatus.NOT_FOUND)
+        }
+    }
+
+    @DeleteMapping("/{planId}")
+    fun deleteWorkoutPlanById(
+        @PathVariable planId: Int
+    ): ResponseEntity<Any> {
+        return try {
+            workoutPlanService.deleteWorkoutPlanById(planId)
+            ResponseEntity.status(HttpStatus.NO_CONTENT).build()  // Return 204 No Content status
+        } catch (e: WorkoutPlanNotFoundException) {
+            val errorResponse = mapOf("error" to (e.message ?: "Workout plan not found"))
+            ResponseEntity(errorResponse, HttpStatus.NOT_FOUND)
+        } catch (e: Exception) {
+            val errorResponse = mapOf("error" to "Failed to delete workout plan")
+            ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
 

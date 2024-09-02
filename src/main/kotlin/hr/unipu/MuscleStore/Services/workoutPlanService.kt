@@ -8,6 +8,7 @@ import hr.unipu.MuscleStore.exception.WorkoutPlanCreationException
 import hr.unipu.MuscleStore.exception.WorkoutPlanNotFoundException
 import java.time.LocalDateTime
 
+
 interface workoutPlanService {
     @Throws(WorkoutPlanCreationException::class)
     fun createWorkoutPlan(user: User, title: String, timestamp: LocalDateTime, sections: List<PlanSection>): WorkoutPlan
@@ -26,4 +27,7 @@ interface workoutPlanService {
 
     @Throws(WorkoutPlanNotFoundException::class)
     fun getWorkoutPlanById(planId: Int): WorkoutPlan
+
+    @Throws(WorkoutPlanNotFoundException::class)
+    fun deleteWorkoutPlanById(planId: Int) // Add the method to delete a workout plan
 }

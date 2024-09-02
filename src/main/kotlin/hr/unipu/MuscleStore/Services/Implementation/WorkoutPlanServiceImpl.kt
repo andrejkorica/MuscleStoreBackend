@@ -118,4 +118,14 @@ class WorkoutPlanServiceImpl @Autowired constructor(
         return workoutPlanRepository.findById(planId)
             .orElseThrow { WorkoutPlanNotFoundException("Workout plan with ID $planId not found") }
     }
+
+    @Throws(WorkoutPlanNotFoundException::class)
+    override fun deleteWorkoutPlanById(planId: Int) {
+        val workoutPlan = workoutPlanRepository.findById(planId)
+            .orElseThrow { WorkoutPlanNotFoundException("Workout plan with ID $planId not found") }
+
+        // Delete the workout plan and any associated sections and exercises
+        workoutPlanRepository.delete(workoutPlan)
+        println("Deleted workout plan with ID: $planId")
+    }
 }

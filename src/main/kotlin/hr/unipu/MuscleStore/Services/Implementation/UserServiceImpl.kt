@@ -17,7 +17,6 @@ import java.util.regex.Pattern
 @Transactional
 class UserServiceImpl : UserServices {
 
-    private val logger: Logger = LoggerFactory.getLogger(WorkoutPlanResource::class.java)
     @Autowired
     private lateinit var userRepository: UserRepository
 
