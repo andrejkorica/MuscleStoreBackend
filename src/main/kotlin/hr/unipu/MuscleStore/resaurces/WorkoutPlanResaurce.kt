@@ -2,10 +2,13 @@ package hr.unipu.MuscleStore.resources
 
 import hr.unipu.MuscleStore.Services.workoutPlanService
 import hr.unipu.MuscleStore.domain.User
+import hr.unipu.MuscleStore.entity.ActiveWorkout
 import hr.unipu.MuscleStore.entity.PlanSection
 import hr.unipu.MuscleStore.entity.Exercise
 import hr.unipu.MuscleStore.exception.WorkoutPlanCreationException
 import hr.unipu.MuscleStore.exception.WorkoutPlanNotFoundException
+import hr.unipu.MuscleStore.repositories.ActiveWorkoutRepository
+import hr.unipu.MuscleStore.repositories.WorkoutPlanRepository
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -212,7 +215,63 @@ class WorkoutPlanResource @Autowired constructor(
         }
     }
 
+    @PostMapping("/{workoutPlanId}/set-active")
+    fun setActiveWorkoutPlan(
+        httpRequest: HttpServletRequest,
+        @PathVariable workoutPlanId: Int
+    ): ResponseEntity<Map<String, Any>> {
+        return try {
+            val userId = httpRequest.getAttribute("userId") as Int
+            val user = User(userId)
 
+            // Set or update the active workout plan
+            val activeWorkout = workoutPlanService.setActiveWorkout(user, workoutPlanId)
+
+            // Provide default values if nullable
+            val response: Map<String, Any> = mapOf(
+                "message" to "Active workout plan set successfully",
+                "activeWorkoutPlanId" to (activeWorkout.id ?: -1), // Default value if id is null
+                "userId" to (activeWorkout.user?.userId ?: -1), // Default value if userId is null
+                "workoutPlanId" to (activeWorkout.workoutPlan?.planId ?: -1) // Default value if planId is null
+            )
+
+            ResponseEntity.ok(response)
+        } catch (e: WorkoutPlanNotFoundException) {
+            val errorResponse: Map<String, Any> = mapOf(
+                "error" to (e.message ?: "Workout plan not found")
+            )
+            ResponseEntity(errorResponse, HttpStatus.NOT_FOUND)
+        } catch (e: Exception) {
+            val errorResponse: Map<String, Any> = mapOf(
+                "error" to "Failed to set active workout plan"
+            )
+            ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    @GetMapping("/active")
+    fun getActiveWorkoutPlan(httpRequest: HttpServletRequest): ResponseEntity<Any> {
+        val userId = httpRequest.getAttribute("userId") as Int
+
+        return try {
+            val user = User(userId)
+            val activeWorkout = workoutPlanService.getActiveWorkoutByUser(user)
+
+            val response = mapOf(
+                "activeWorkoutPlanId" to (activeWorkout.id ?: -1),
+                "userId" to (activeWorkout.user?.userId ?: -1),
+                "workoutPlanId" to (activeWorkout.workoutPlan?.planId ?: -1)
+            )
+
+            ResponseEntity.ok(response)
+        } catch (e: WorkoutPlanNotFoundException) {
+            val errorResponse = mapOf("error" to (e.message ?: "Active workout not found"))
+            ResponseEntity(errorResponse, HttpStatus.NOT_FOUND)
+        } catch (e: Exception) {
+            val errorResponse = mapOf("error" to "Failed to retrieve active workout plan")
+            ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
 
 
     // Define a request DTO for creating a workout plan
@@ -248,5 +307,12 @@ class WorkoutPlanResource @Autowired constructor(
         val timestamp: LocalDateTime?,
         val user: UserDTO, // Changed from userId to UserDTO
         val sections: List<PlanSectionDTO>
+    )
+
+    data class SetActiveWorkoutResponse(
+        val message: String,
+        val activeWorkoutPlanId: Int,
+        val userId: Int,
+        val workoutPlanId: Int
     )
 }

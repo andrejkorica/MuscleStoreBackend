@@ -5,11 +5,13 @@ import hr.unipu.MuscleStore.domain.User
 import hr.unipu.MuscleStore.domain.WorkoutPlan
 import hr.unipu.MuscleStore.entity.Exercise
 import hr.unipu.MuscleStore.entity.PlanSection
+import hr.unipu.MuscleStore.entity.ActiveWorkout // Ensure ActiveWorkout entity is imported
 import hr.unipu.MuscleStore.exception.WorkoutPlanCreationException
 import hr.unipu.MuscleStore.exception.WorkoutPlanNotFoundException
 import hr.unipu.MuscleStore.repositories.WorkoutPlanRepository
 import hr.unipu.MuscleStore.repositories.PlanSectionRepository
 import hr.unipu.MuscleStore.repositories.ExerciseRepository
+import hr.unipu.MuscleStore.repositories.ActiveWorkoutRepository // Import for ActiveWorkoutRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -20,7 +22,8 @@ import java.time.LocalDateTime
 class WorkoutPlanServiceImpl @Autowired constructor(
     private val workoutPlanRepository: WorkoutPlanRepository,
     private val planSectionRepository: PlanSectionRepository,
-    private val exerciseRepository: ExerciseRepository
+    private val exerciseRepository: ExerciseRepository,
+    private val activeWorkoutRepository: ActiveWorkoutRepository // Inject ActiveWorkoutRepository
 ) : workoutPlanService {
 
     @Throws(WorkoutPlanCreationException::class)
@@ -127,5 +130,30 @@ class WorkoutPlanServiceImpl @Autowired constructor(
         // Delete the workout plan and any associated sections and exercises
         workoutPlanRepository.delete(workoutPlan)
         println("Deleted workout plan with ID: $planId")
+    }
+
+    @Throws(WorkoutPlanNotFoundException::class)
+    override fun setActiveWorkout(user: User, workoutPlanId: Int): ActiveWorkout {
+        val workoutPlan = workoutPlanRepository.findById(workoutPlanId)
+            .orElseThrow { WorkoutPlanNotFoundException("Workout plan with ID $workoutPlanId not found") }
+
+        // Check if the user already has an active workout
+        val existingActiveWorkout = activeWorkoutRepository.findByUser(user)
+
+        return if (existingActiveWorkout != null) {
+            // Update the existing active workout
+            existingActiveWorkout.workoutPlan = workoutPlan
+            activeWorkoutRepository.save(existingActiveWorkout)
+        } else {
+            // Create a new active workout
+            val newActiveWorkout = ActiveWorkout(user = user, workoutPlan = workoutPlan)
+            activeWorkoutRepository.save(newActiveWorkout)
+        }
+    }
+
+    @Throws(WorkoutPlanNotFoundException::class)
+    override fun getActiveWorkoutByUser(user: User): ActiveWorkout {
+        return activeWorkoutRepository.findByUser(user)
+            ?: throw WorkoutPlanNotFoundException("No active workout found for user with ID ${user.userId}")
     }
 }
