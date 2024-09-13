@@ -1,5 +1,6 @@
 package hr.unipu.MuscleStore.entity
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import hr.unipu.MuscleStore.domain.WorkoutPlan
 import jakarta.persistence.*
 
@@ -13,6 +14,7 @@ class PlanSection(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id", nullable = false)
+    @JsonIgnore  // Ignore serialization of workoutPlan from AddedFromStore side
     var workoutPlan: WorkoutPlan? = null,
 
     @Column(name = "title")

@@ -5,6 +5,7 @@ import hr.unipu.MuscleStore.domain.WorkoutPlan
 import hr.unipu.MuscleStore.entity.Exercise
 import hr.unipu.MuscleStore.entity.PlanSection
 import hr.unipu.MuscleStore.entity.ActiveWorkout // Add import for ActiveWorkout
+import hr.unipu.MuscleStore.entity.AddedFromStore
 import hr.unipu.MuscleStore.exception.WorkoutPlanCreationException
 import hr.unipu.MuscleStore.exception.WorkoutPlanNotFoundException
 import java.time.LocalDateTime
@@ -29,11 +30,20 @@ interface workoutPlanService {
     fun getWorkoutPlanById(planId: Int): WorkoutPlan
 
     @Throws(WorkoutPlanNotFoundException::class)
-    fun deleteWorkoutPlanById(planId: Int) // Add the method to delete a workout plan
+    fun deleteWorkoutPlanById(planId: Int)
 
     @Throws(WorkoutPlanNotFoundException::class)
-    fun setActiveWorkout(user: User, workoutPlanId: Int): ActiveWorkout // Add this method
+    fun setActiveWorkout(user: User, workoutPlanId: Int): ActiveWorkout
 
     @Throws(WorkoutPlanNotFoundException::class)
     fun getActiveWorkoutByUser(user: User): ActiveWorkout
+
+    @Throws(WorkoutPlanNotFoundException::class)
+    fun addWorkoutFromStore(user: User, workoutPlan: WorkoutPlan): AddedFromStore
+
+    @Throws(WorkoutPlanNotFoundException::class)
+    fun getAllAddedFromStore(): List<AddedFromStore>
+
+    @Throws(WorkoutPlanNotFoundException::class)
+    fun getWorkoutPlansByIds(ids: List<Int>): List<WorkoutPlan> // Updated method signature
 }

@@ -6,12 +6,10 @@ import hr.unipu.MuscleStore.domain.WorkoutPlan
 import hr.unipu.MuscleStore.entity.Exercise
 import hr.unipu.MuscleStore.entity.PlanSection
 import hr.unipu.MuscleStore.entity.ActiveWorkout // Ensure ActiveWorkout entity is imported
+import hr.unipu.MuscleStore.entity.AddedFromStore
 import hr.unipu.MuscleStore.exception.WorkoutPlanCreationException
 import hr.unipu.MuscleStore.exception.WorkoutPlanNotFoundException
-import hr.unipu.MuscleStore.repositories.WorkoutPlanRepository
-import hr.unipu.MuscleStore.repositories.PlanSectionRepository
-import hr.unipu.MuscleStore.repositories.ExerciseRepository
-import hr.unipu.MuscleStore.repositories.ActiveWorkoutRepository // Import for ActiveWorkoutRepository
+import hr.unipu.MuscleStore.repositories.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -23,7 +21,8 @@ class WorkoutPlanServiceImpl @Autowired constructor(
     private val workoutPlanRepository: WorkoutPlanRepository,
     private val planSectionRepository: PlanSectionRepository,
     private val exerciseRepository: ExerciseRepository,
-    private val activeWorkoutRepository: ActiveWorkoutRepository // Inject ActiveWorkoutRepository
+    private val activeWorkoutRepository: ActiveWorkoutRepository,
+    private val addedFromStoreRepository: AddedFromStoreRepository,
 ) : workoutPlanService {
 
     @Throws(WorkoutPlanCreationException::class)
@@ -34,16 +33,14 @@ class WorkoutPlanServiceImpl @Autowired constructor(
             val workoutPlan = WorkoutPlan(
                 user = user,
                 title = title,
-                timestamp = timestamp,  // Set the timestamp here
+                timestamp = timestamp,
                 sections = sections.toMutableList()
             )
 
-            // Save WorkoutPlan first
             println("Saving workout plan...")
             val savedWorkoutPlan = workoutPlanRepository.save(workoutPlan)
             println("Saved workout plan with ID: ${savedWorkoutPlan.planId}")
 
-            // Save PlanSections
             sections.forEachIndexed { index, section ->
                 println("Processing section ${index + 1}: ${section.title}")
 
@@ -51,13 +48,11 @@ class WorkoutPlanServiceImpl @Autowired constructor(
                 val savedSection = planSectionRepository.save(section)
                 println("Saved section with ID: ${savedSection.sectionId}")
 
-                // Save Exercises
                 section.exercises.forEachIndexed { exerciseIndex, exercise ->
                     println("Processing exercise ${exerciseIndex + 1}: ${exercise.title}")
 
                     exercise.planSection = savedSection
 
-                    // Check for existing exercise to avoid duplication
                     val existingExercise = exerciseRepository.findByTitleAndPlanSection(exercise.title, savedSection)
                     if (existingExercise == null) {
                         val savedExercise = exerciseRepository.save(exercise)
@@ -127,7 +122,6 @@ class WorkoutPlanServiceImpl @Autowired constructor(
         val workoutPlan = workoutPlanRepository.findById(planId)
             .orElseThrow { WorkoutPlanNotFoundException("Workout plan with ID $planId not found") }
 
-        // Delete the workout plan and any associated sections and exercises
         workoutPlanRepository.delete(workoutPlan)
         println("Deleted workout plan with ID: $planId")
     }
@@ -137,15 +131,12 @@ class WorkoutPlanServiceImpl @Autowired constructor(
         val workoutPlan = workoutPlanRepository.findById(workoutPlanId)
             .orElseThrow { WorkoutPlanNotFoundException("Workout plan with ID $workoutPlanId not found") }
 
-        // Check if the user already has an active workout
         val existingActiveWorkout = activeWorkoutRepository.findByUser(user)
 
         return if (existingActiveWorkout != null) {
-            // Update the existing active workout
             existingActiveWorkout.workoutPlan = workoutPlan
             activeWorkoutRepository.save(existingActiveWorkout)
         } else {
-            // Create a new active workout
             val newActiveWorkout = ActiveWorkout(user = user, workoutPlan = workoutPlan)
             activeWorkoutRepository.save(newActiveWorkout)
         }
@@ -155,5 +146,21 @@ class WorkoutPlanServiceImpl @Autowired constructor(
     override fun getActiveWorkoutByUser(user: User): ActiveWorkout {
         return activeWorkoutRepository.findByUser(user)
             ?: throw WorkoutPlanNotFoundException("No active workout found for user with ID ${user.userId}")
+    }
+
+    @Throws(WorkoutPlanNotFoundException::class)
+    override fun addWorkoutFromStore(user: User, workoutPlan: WorkoutPlan): AddedFromStore {
+        val addedFromStore = AddedFromStore(user = user, workoutPlan = workoutPlan)
+        return addedFromStoreRepository.save(addedFromStore)
+    }
+
+    @Throws(WorkoutPlanNotFoundException::class)
+    override fun getAllAddedFromStore(): List<AddedFromStore> {
+        return addedFromStoreRepository.findAll()
+    }
+
+    @Throws(WorkoutPlanNotFoundException::class)
+    override fun getWorkoutPlansByIds(ids: List<Int>): List<WorkoutPlan> {
+        return workoutPlanRepository.findAllById(ids)
     }
 }

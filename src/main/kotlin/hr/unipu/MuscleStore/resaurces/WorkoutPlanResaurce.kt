@@ -2,6 +2,7 @@ package hr.unipu.MuscleStore.resources
 
 import hr.unipu.MuscleStore.Services.workoutPlanService
 import hr.unipu.MuscleStore.domain.User
+import hr.unipu.MuscleStore.domain.WorkoutPlan
 import hr.unipu.MuscleStore.entity.ActiveWorkout
 import hr.unipu.MuscleStore.entity.PlanSection
 import hr.unipu.MuscleStore.entity.Exercise
@@ -273,6 +274,66 @@ class WorkoutPlanResource @Autowired constructor(
         }
     }
 
+    @PostMapping("/add-from-store")
+    fun addWorkoutFromStore(
+        httpRequest: HttpServletRequest,
+        @RequestBody request: AddWorkoutFromStoreRequest
+    ): ResponseEntity<Map<String, Any>> {
+        return try {
+            // Extract user ID from the HttpServletRequest
+            val userId = httpRequest.getAttribute("userId") as Int
+            val user = User(userId)  // Create a User instance with the extracted userId
+
+            // Get the workout plan
+            val workoutPlan = workoutPlanService.getWorkoutPlanById(request.workoutPlanId)
+
+            // Add the workout plan to the store
+            val addedFromStore = workoutPlanService.addWorkoutFromStore(user, workoutPlan)
+
+            val response = mapOf(
+                "message" to "Workout added to store successfully",
+                "addedFromStoreId" to (addedFromStore.id ?: -1)
+            )
+
+            ResponseEntity.ok(response)
+        } catch (e: WorkoutPlanNotFoundException) {
+            val errorResponse = mapOf("error" to (e.message ?: "Workout plan not found"))
+            ResponseEntity(errorResponse, HttpStatus.NOT_FOUND)
+        } catch (e: Exception) {
+            val errorResponse = mapOf("error" to "Failed to add workout to store")
+            ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    @GetMapping("/add-from-store")
+    fun getAllAddedFromStore(): ResponseEntity<Any> {
+        return try {
+            // Fetch all records from the add-from-store table
+            val addedFromStoreRecords = workoutPlanService.getAllAddedFromStore()
+
+            // Map records to a response format with full WorkoutPlan details
+            val response = addedFromStoreRecords.map { record ->
+                AddFromStoreResponse(
+                    id = record.id ?: -1,
+                    userId = record.user?.userId ?: -1,
+                    workoutPlanId = record.workoutPlan?.planId ?: -1, // Explicitly set the workoutPlanId
+                    workoutPlan = record.workoutPlan // Include the full WorkoutPlan object
+                )
+            }
+
+            ResponseEntity.ok(response)
+        } catch (e: Exception) {
+            val errorResponse = mapOf("error" to "Failed to retrieve records from store")
+            ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+
+    @GetMapping("/by-ids")
+    fun getWorkoutPlansByIds(@RequestBody idsRequest: IdsRequest): ResponseEntity<List<WorkoutPlan>> {
+        val workoutPlans = workoutPlanService.getWorkoutPlansByIds(idsRequest.ids)
+        return ResponseEntity.ok(workoutPlans)
+    }
 
     // Define a request DTO for creating a workout plan
     data class CreateWorkoutPlanRequest(
@@ -280,6 +341,8 @@ class WorkoutPlanResource @Autowired constructor(
         val sections: List<PlanSectionDTO>,
         val timestamp: LocalDateTime? = null
     )
+
+    data class IdsRequest(val ids: List<Int>)
 
     data class UserDTO(
         val userId: Int,
@@ -315,4 +378,16 @@ class WorkoutPlanResource @Autowired constructor(
         val userId: Int,
         val workoutPlanId: Int
     )
+    data class AddWorkoutFromStoreRequest(
+        val userId: Int,
+        val workoutPlanId: Int
+    )
+
+    data class AddFromStoreResponse(
+        val id: Int,
+        val userId: Int,
+        val workoutPlanId: Int,
+        val workoutPlan: WorkoutPlan? // Include the full WorkoutPlan object
+    )
+
 }

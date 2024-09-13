@@ -1,6 +1,7 @@
 package hr.unipu.MuscleStore.repositories
 
 import hr.unipu.MuscleStore.domain.WorkoutPlan
+import hr.unipu.MuscleStore.exception.WorkoutPlanNotFoundException
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 import java.util.*
@@ -17,4 +18,5 @@ interface WorkoutPlanRepository : JpaRepository<WorkoutPlan, Int> {
 
     // Delete a workout plan by its ID
     override fun deleteById(id: Int)
+
 }

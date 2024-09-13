@@ -1,4 +1,5 @@
 package hr.unipu.MuscleStore.entity
+import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 
 @Entity
@@ -17,6 +18,7 @@ class Exercise(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "section_id", nullable = false)
+    @JsonIgnore  // Ignore serialization of workoutPlan from AddedFromStore side
     var planSection: PlanSection? = null
 ) {
     // Default no-arg constructor
