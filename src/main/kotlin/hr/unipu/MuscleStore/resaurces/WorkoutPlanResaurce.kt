@@ -1,22 +1,18 @@
 package hr.unipu.MuscleStore.resources
 
+import hr.unipu.MuscleStore.Services.Implementation.WorkoutPlanServiceImpl
 import hr.unipu.MuscleStore.Services.workoutPlanService
 import hr.unipu.MuscleStore.domain.User
 import hr.unipu.MuscleStore.domain.WorkoutPlan
-import hr.unipu.MuscleStore.entity.ActiveWorkout
 import hr.unipu.MuscleStore.entity.PlanSection
 import hr.unipu.MuscleStore.entity.Exercise
 import hr.unipu.MuscleStore.exception.WorkoutPlanCreationException
 import hr.unipu.MuscleStore.exception.WorkoutPlanNotFoundException
-import hr.unipu.MuscleStore.repositories.ActiveWorkoutRepository
-import hr.unipu.MuscleStore.repositories.WorkoutPlanRepository
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 
 @RestController
@@ -306,13 +302,21 @@ class WorkoutPlanResource @Autowired constructor(
     }
 
     @GetMapping("/add-from-store")
-    fun getAllAddedFromStore(): ResponseEntity<Any> {
+    fun getAllAddedFromStore(httpRequest: HttpServletRequest): ResponseEntity<Any> {
         return try {
+            // Retrieve user ID from the HTTP request
+            val userId = httpRequest.getAttribute("userId") as Int
+
             // Fetch all records from the add-from-store table
             val addedFromStoreRecords = workoutPlanService.getAllAddedFromStore()
 
-            // Map records to a response format with full WorkoutPlan details
-            val response = addedFromStoreRecords.map { record ->
+            // Filter records for the specified user ID
+            val filteredRecords = addedFromStoreRecords.filter { record ->
+                record.user?.userId == userId
+            }
+
+            // Map filtered records to a response format with full WorkoutPlan details
+            val response = filteredRecords.map { record ->
                 AddFromStoreResponse(
                     id = record.id ?: -1,
                     userId = record.user?.userId ?: -1,
@@ -334,6 +338,81 @@ class WorkoutPlanResource @Autowired constructor(
         val workoutPlans = workoutPlanService.getWorkoutPlansByIds(idsRequest.ids)
         return ResponseEntity.ok(workoutPlans)
     }
+
+    @PostMapping("/workout-notations")
+    fun createWorkoutNotation(
+        @RequestBody request: CreateWorkoutNotationRequest,
+        httpRequest: HttpServletRequest
+    ): ResponseEntity<Map<String, Any>> {
+        return try {
+            val userId = httpRequest.getAttribute("userId") as Int
+            val user = User(userId)
+            val activeWorkout = workoutPlanService.getActiveWorkoutByUser(user)
+
+            val timestamp = request.timestamp ?: LocalDateTime.now()
+
+            val workoutNotation = workoutPlanService.createWorkoutNotation(
+                user = user,
+                activeWorkout = activeWorkout,
+                timestamp = timestamp
+            )
+
+            val response: Map<String, Any> = mapOf(
+                "message" to "Workout notation created successfully",
+                "workoutNotationId" to (workoutNotation.id ?: -1),
+                "userId" to (user.userId ?: -1),
+                "activeWorkoutId" to (activeWorkout.id ?: -1),
+                "timestamp" to timestamp.toString()
+            )
+
+            ResponseEntity.ok(response)
+        } catch (e: Exception) {
+            val errorResponse = mapOf("error" to "Failed to create workout notation")
+            ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    @GetMapping("/workout-notations")
+    fun getWorkoutNotationsForUser(
+        httpRequest: HttpServletRequest
+    ): ResponseEntity<Any> {
+        return try {
+            // Retrieve user ID from the HTTP request
+            val userId = httpRequest.getAttribute("userId") as Int
+
+            // Fetch workout notations by user ID
+            val workoutNotations = workoutPlanService.getWorkoutNotationsByUserId(userId)
+
+            // Map the notations to a response format
+            val response = workoutNotations.map { notation ->
+                WorkoutNotationResponse(
+                    id = notation.id ?: -1,
+                    timestamp = notation.timestamp,
+                    activeWorkoutId = notation.activeWorkout?.id ?: -1,
+                    userId = notation.user?.userId ?: -1
+                )
+            }
+
+            ResponseEntity.ok(response)
+        } catch (e: WorkoutPlanNotFoundException) {
+            val errorResponse = mapOf("error" to (e.message ?: "Failed to retrieve workout notations"))
+            ResponseEntity(errorResponse, HttpStatus.NOT_FOUND)
+        } catch (e: Exception) {
+            val errorResponse = mapOf("error" to "Failed to retrieve workout notations")
+            ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    data class WorkoutNotationResponse(
+        val id: Long,
+        val timestamp: LocalDateTime?,
+        val activeWorkoutId: Int,
+        val userId: Int
+    )
+
+    data class CreateWorkoutNotationRequest(
+        val timestamp: LocalDateTime
+    )
 
     // Define a request DTO for creating a workout plan
     data class CreateWorkoutPlanRequest(

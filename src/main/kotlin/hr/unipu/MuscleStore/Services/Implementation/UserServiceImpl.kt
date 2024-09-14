@@ -4,9 +4,7 @@ import hr.unipu.MuscleStore.Services.UserServices
 import hr.unipu.MuscleStore.domain.User
 import hr.unipu.MuscleStore.exception.EtAuthException
 import hr.unipu.MuscleStore.repositories.UserRepository
-import hr.unipu.MuscleStore.resources.WorkoutPlanResource
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

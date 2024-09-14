@@ -10,6 +10,7 @@ import hr.unipu.MuscleStore.entity.AddedFromStore
 import hr.unipu.MuscleStore.exception.WorkoutPlanCreationException
 import hr.unipu.MuscleStore.exception.WorkoutPlanNotFoundException
 import hr.unipu.MuscleStore.repositories.*
+import hr.unipu.MuscleStore.entity.WorkoutNotation
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -23,6 +24,8 @@ class WorkoutPlanServiceImpl @Autowired constructor(
     private val exerciseRepository: ExerciseRepository,
     private val activeWorkoutRepository: ActiveWorkoutRepository,
     private val addedFromStoreRepository: AddedFromStoreRepository,
+    private val workoutNotationRepository: WorkoutNotationRepository,
+
 ) : workoutPlanService {
 
     @Throws(WorkoutPlanCreationException::class)
@@ -37,19 +40,14 @@ class WorkoutPlanServiceImpl @Autowired constructor(
                 sections = sections.toMutableList()
             )
 
-            println("Saving workout plan...")
             val savedWorkoutPlan = workoutPlanRepository.save(workoutPlan)
-            println("Saved workout plan with ID: ${savedWorkoutPlan.planId}")
 
             sections.forEachIndexed { index, section ->
-                println("Processing section ${index + 1}: ${section.title}")
 
                 section.workoutPlan = savedWorkoutPlan
                 val savedSection = planSectionRepository.save(section)
-                println("Saved section with ID: ${savedSection.sectionId}")
 
                 section.exercises.forEachIndexed { exerciseIndex, exercise ->
-                    println("Processing exercise ${exerciseIndex + 1}: ${exercise.title}")
 
                     exercise.planSection = savedSection
 
@@ -163,4 +161,42 @@ class WorkoutPlanServiceImpl @Autowired constructor(
     override fun getWorkoutPlansByIds(ids: List<Int>): List<WorkoutPlan> {
         return workoutPlanRepository.findAllById(ids)
     }
+
+    @Throws(WorkoutPlanNotFoundException::class)
+    override fun createWorkoutNotation(user: User, activeWorkout: ActiveWorkout, timestamp: LocalDateTime): WorkoutNotation {
+        requireNotNull(workoutNotationRepository) { "WorkoutNotationRepository is not injected" }
+
+        try {
+            println("Creating workout notation for user ID: ${user.userId} at timestamp: $timestamp")
+
+            val workoutNotation = WorkoutNotation(
+                user = user,
+                activeWorkout = activeWorkout,
+                timestamp = timestamp
+            )
+
+            val savedWorkoutNotation = workoutNotationRepository.save(workoutNotation)
+            println("Saved workout notation with ID: ${savedWorkoutNotation.id}")
+
+            return savedWorkoutNotation
+        } catch (e: Exception) {
+            println("Exception occurred while creating workout notation: ${e.message}")
+            throw WorkoutPlanNotFoundException("Failed to create workout notation: ${e.message}")
+        }
+    }
+
+    @Throws(WorkoutPlanNotFoundException::class)
+    override fun getWorkoutNotationsByUserId(userId: Int): List<WorkoutNotation> {
+        // Retrieve workout notations by user ID using the repository
+        val notations = workoutNotationRepository.findByUserId(userId)
+
+        // Check if the list is empty and throw an exception if necessary
+        if (notations.isEmpty()) {
+            throw WorkoutPlanNotFoundException("No workout notations found for user with ID $userId")
+        }
+
+        return notations
+    }
+
+
 }

@@ -11,7 +11,6 @@ interface UserServices {
     @Throws(EtAuthException::class)
     fun registerUser(firstName :String, lastName :String, email :String, password :String) : User
 
-
     @Throws(EtAuthException::class)
     fun updateProfilePicture(userId: Int, profilePicture: String): User
 }

@@ -38,6 +38,8 @@ TRUNCATE TABLE et_users CASCADE;
 
 TRUNCATE TABLE workout_plans, plan_sections, exercises CASCADE;
 
+DROP TABLE workout_notations
+
 
 
 

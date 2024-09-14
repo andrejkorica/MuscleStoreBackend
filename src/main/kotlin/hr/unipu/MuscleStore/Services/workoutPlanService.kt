@@ -8,6 +8,7 @@ import hr.unipu.MuscleStore.entity.ActiveWorkout // Add import for ActiveWorkout
 import hr.unipu.MuscleStore.entity.AddedFromStore
 import hr.unipu.MuscleStore.exception.WorkoutPlanCreationException
 import hr.unipu.MuscleStore.exception.WorkoutPlanNotFoundException
+import hr.unipu.MuscleStore.entity.WorkoutNotation
 import java.time.LocalDateTime
 
 interface workoutPlanService {
@@ -46,4 +47,10 @@ interface workoutPlanService {
 
     @Throws(WorkoutPlanNotFoundException::class)
     fun getWorkoutPlansByIds(ids: List<Int>): List<WorkoutPlan> // Updated method signature
+
+    @Throws(WorkoutPlanNotFoundException::class)
+    fun createWorkoutNotation(user: User, activeWorkout: ActiveWorkout, timestamp: LocalDateTime): WorkoutNotation
+
+    @Throws(WorkoutPlanNotFoundException::class)
+    fun getWorkoutNotationsByUserId(userId: Int): List<WorkoutNotation>
 }
