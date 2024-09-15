@@ -198,5 +198,10 @@ class WorkoutPlanServiceImpl @Autowired constructor(
         return notations
     }
 
+    @Throws(WorkoutPlanNotFoundException::class)
+    override fun deleteAllWorkoutNotationsForUser(userId: Int) {
+        // Your logic to delete all workout notations by user ID
+        workoutNotationRepository.deleteByUserId(userId)
+    }
 
 }

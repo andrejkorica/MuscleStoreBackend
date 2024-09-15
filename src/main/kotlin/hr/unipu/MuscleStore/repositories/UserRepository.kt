@@ -19,4 +19,6 @@ interface UserRepository {
     @Throws(EtAuthException::class)
     fun updateProfilePicture(userId: Int, profilePicture: String)
 
+    @Throws(EtAuthException::class)
+    fun deleteById(id: Int) // Add this method
 }

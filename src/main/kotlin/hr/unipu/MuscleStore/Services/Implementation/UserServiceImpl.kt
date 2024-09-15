@@ -48,4 +48,10 @@ class UserServiceImpl : UserServices {
         return user
     }
 
+    @Transactional
+    override fun deleteUserAndAssociatedData(userId: Int) {
+        // Delete user data
+        userRepository.deleteById(userId)
+
+    }
 }

@@ -4,6 +4,7 @@ import hr.unipu.MuscleStore.entity.WorkoutNotation
 import hr.unipu.MuscleStore.repositories.CustomWorkoutNotationRepository
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
+import jakarta.transaction.Transactional
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -21,4 +22,14 @@ class WorkoutNotationRepositoryImpl : CustomWorkoutNotationRepository {
             .setParameter("userId", userId)
             .resultList
     }
+
+    @Transactional
+    override fun deleteByUserId(userId: Int): Int {
+        val query = entityManager.createQuery(
+            "DELETE FROM WorkoutNotation wn WHERE wn.user.userId = :userId"
+        )
+        query.setParameter("userId", userId)
+        return query.executeUpdate() // Returns the number of entities deleted
+    }
+
 }

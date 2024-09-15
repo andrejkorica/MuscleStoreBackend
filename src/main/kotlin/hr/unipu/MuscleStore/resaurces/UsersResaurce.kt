@@ -99,4 +99,23 @@ class UsersResource {
         return ResponseEntity(mapOf("message" to "Profile picture updated successfully"), HttpStatus.OK)
     }
 
+    @DeleteMapping("/account")
+    fun deleteUserAccount(httpRequest: HttpServletRequest): ResponseEntity<Map<String, String>> {
+        val userId = httpRequest.getAttribute("userId") as? Int
+
+        // Log the userId and check if it's null
+        if (userId == null) {
+            logger.warn("UserId is null. Cannot proceed with deletion.")
+            return ResponseEntity(mapOf("message" to "User ID is missing"), HttpStatus.BAD_REQUEST)
+        }
+
+        return try {
+            userServices.deleteUserAndAssociatedData(userId)
+            ResponseEntity(mapOf("message" to "User account and associated data deleted successfully"), HttpStatus.OK)
+        } catch (e: Exception) {
+            logger.error("Error deleting user account and associated data", e)
+            ResponseEntity(mapOf("message" to "Error deleting user account"), HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
 }

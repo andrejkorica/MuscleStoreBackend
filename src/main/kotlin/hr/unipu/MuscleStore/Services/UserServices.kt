@@ -13,4 +13,7 @@ interface UserServices {
 
     @Throws(EtAuthException::class)
     fun updateProfilePicture(userId: Int, profilePicture: String): User
+
+    @Throws(EtAuthException::class)
+    fun deleteUserAndAssociatedData(userId: Int)
 }

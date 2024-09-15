@@ -403,6 +403,30 @@ class WorkoutPlanResource @Autowired constructor(
         }
     }
 
+    @DeleteMapping("/workout-notations")
+    fun deleteAllWorkoutNotationsForUser(
+        httpRequest: HttpServletRequest
+    ): ResponseEntity<Map<String, Any>> {
+        return try {
+            // Retrieve user ID from the HTTP request
+            val userId = httpRequest.getAttribute("userId") as Int
+
+            // Call the service to delete all workout notations for the user
+            workoutPlanService.deleteAllWorkoutNotationsForUser(userId)
+
+            // Return a successful response
+            val response = mapOf("message" to "All workout notations deleted successfully")
+            ResponseEntity.ok(response)
+        } catch (e: WorkoutPlanNotFoundException) {
+            val errorResponse = mapOf("error" to (e.message ?: "No workout notations found for the user"))
+            ResponseEntity(errorResponse, HttpStatus.NOT_FOUND)
+        } catch (e: Exception) {
+            val errorResponse = mapOf("error" to "Failed to delete workout notations")
+            ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+
     data class WorkoutNotationResponse(
         val id: Long,
         val timestamp: LocalDateTime?,

@@ -53,4 +53,7 @@ interface workoutPlanService {
 
     @Throws(WorkoutPlanNotFoundException::class)
     fun getWorkoutNotationsByUserId(userId: Int): List<WorkoutNotation>
+
+    @Throws(WorkoutPlanNotFoundException::class)
+    fun deleteAllWorkoutNotationsForUser(userId: Int)
 }

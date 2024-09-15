@@ -17,6 +17,8 @@ class MuscleStoreApplication {
 		registration.addUrlPatterns("/api/workout-plans/*")
 		registration.addUrlPatterns("/api/users/profile-picture")
 		registration.addUrlPatterns("/api/users/me")
+		registration.addUrlPatterns("/api/users/account")
+
 		return registration
 	}
 

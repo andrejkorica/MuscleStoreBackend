@@ -4,6 +4,7 @@ import at.favre.lib.crypto.bcrypt.BCrypt
 import hr.unipu.MuscleStore.domain.User
 import hr.unipu.MuscleStore.exception.EtAuthException
 import hr.unipu.MuscleStore.repositories.UserRepository
+import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
@@ -22,7 +23,7 @@ class UserRepositoryImpl : UserRepository {
     private val SQL_FIND_BY_ID: String = "SELECT USER_ID, FIRST_NAME, LAST_NAME, EMAIL, PASSWORD, PROFILE_PICTURE FROM et_users WHERE USER_ID = ?"
     private val SQL_FIND_BY_EMAIL: String = "SELECT USER_ID, FIRST_NAME, LAST_NAME, EMAIL, PASSWORD, PROFILE_PICTURE FROM et_users WHERE EMAIL = ?"
     private val SQL_UPDATE_PROFILE_PICTURE = "UPDATE et_users SET PROFILE_PICTURE = ? WHERE USER_ID = ?"
-
+    private val SQL_DELETE_USER: String = "DELETE FROM et_users WHERE USER_ID = ?"
     @Autowired
     private lateinit var jdbcTemplate: JdbcTemplate
 
@@ -100,5 +101,15 @@ class UserRepositoryImpl : UserRepository {
         }
     }
 
+    @Transactional
+    override fun deleteById(id: Int) {
+        try {
+
+            // Finally, delete the user record
+            jdbcTemplate.update(SQL_DELETE_USER, id)
+        } catch (e: Exception) {
+            throw EtAuthException("Failed to delete user. ${e.message}")
+        }
+    }
 
 }
